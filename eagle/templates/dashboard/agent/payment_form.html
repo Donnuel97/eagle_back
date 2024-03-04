@@ -1,0 +1,99 @@
+{% extends 'main/agent_main.html' %}
+{% load static %}
+
+{% block content %}
+		<!-- NAVBAR -->
+
+		<!-- MAIN -->
+		<main>
+			<div class="head-title">
+				<div class="left">
+					<h1>Dashboard</h1>
+					<ul class="breadcrumb">
+						<li>
+							<a href="#">Dashboard</a>
+						</li>
+						<li><i class='bx bx-chevron-right' ></i></li>
+						<li>
+							<a href="#">Home</a>
+						</li>
+                        <li><i class='bx bx-chevron-right' ></i></li>
+						<li>
+							<a class="active" href="#">Payment</a>
+						</li>
+					</ul>
+				</div>
+				
+			</div>
+			<ul class="box-info">
+				<li>
+					<i class='bx bxs-wallet'></i>
+					<span class="text">
+						<a href="collection.html" id="makePaymentLink">
+							<h3>Make payment</h3>
+						</a>
+					</span>
+				</li>
+			</ul>
+	
+			<div class="table-data">
+				<div class="order">
+					<div class="head">
+						<!-- Your table data content -->
+					</div>
+				</div>
+			</div>
+		</main>
+	
+		<section class="section">
+			<span class="overlay"></span>
+	  
+			<div class="modal-box">
+				<i class="fa-regular fa-circle-check"></i>
+				<label>Customer code</label>
+				<form method="post" action="{% url 'payment_start' %}">
+					{% csrf_token %}
+					
+					<input placeholder="Enter customer code" type="text" class="email" id="email" name="customer_id" value=""style='width:100%;'>
+					<div class="buttons">
+						<button class="close-btn">Close</button>
+						<button type="submit">Submit</button>
+					</div>
+				</form>
+			</div>
+		</section>
+	
+		<script>
+			const section = document.querySelector(".section");
+			const overlay = document.querySelector(".overlay");
+			const makePaymentLink = document.getElementById("makePaymentLink");
+			const closeBtn = document.querySelector(".close-btn");
+	
+			makePaymentLink.addEventListener("click", (event) => {
+				event.preventDefault(); // Prevent the default link behavior
+				section.classList.add("active");
+			});
+	
+			overlay.addEventListener("click", () => section.classList.remove("active"));
+	
+			closeBtn.addEventListener("click", () => section.classList.remove("active"));
+		</script>
+	<!-- CONTENT -->
+	
+
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			// Find the active <li> element and remove the active class
+			var activeElement = document.querySelector(".side-menu.top .active");
+			if (activeElement) {
+				activeElement.classList.remove("active");
+			}
+		
+			// Find the desired <li> element and add the active class
+			var desiredElement = document.querySelector(".side-menu.top li:nth-child(1)");
+			if (desiredElement) {
+				desiredElement.classList.add("active");
+			}
+		});
+	</script>
+{% endblock %}

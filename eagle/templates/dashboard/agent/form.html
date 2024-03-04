@@ -1,0 +1,136 @@
+{% extends 'main/agent_main.html' %}
+{% load static %}
+
+{% block content %}
+		<!-- MAIN -->
+		<main>
+			<div class="head-title">
+				<div class="left">
+					<h1>Dashboard</h1>
+					<ul class="breadcrumb">
+						<li>
+							<a href="#">Dashboard</a>
+						</li>
+						<li><i class='bx bx-chevron-right' ></i></li>
+						<li>
+							<a href="#">Home</a>
+						</li>
+                        <li><i class='bx bx-chevron-right' ></i></li>
+						<li>
+							<a href="#">Payment</a>
+						</li>
+                        <li><i class='bx bx-chevron-right' ></i></li>
+						<li>
+							<a class="active" href="#">form</a>
+						</li>
+					</ul>
+				</div>
+				
+			</div>
+			
+	
+			<div class="table-data">
+				<div class="order">
+					<div class="head">
+						<table>
+                            
+                            <tbody>
+								<tr>
+									<td> 
+										<p><b>Agent's Name: </b></p>
+									</td>
+									<td>{{ agent_name }}</td>                                   
+								</tr>
+                                <tr>
+                                    <td> 
+                                        <p><b>CUSTOMER’S FULL NAME: </b></p>
+                                    </td>
+                                    <td>{{ user.username }}</td>                                   
+                                </tr>
+								<tr>
+                                    <td> 
+                                        <p><b>CUSTOMER’S Email: </b></p>
+                                    </td>
+                                    <td>{{ user.email }}</td>                                   
+                                </tr>
+                                <tr>
+                                    <td>                             
+                                        <p><b>DATE:</b></p>
+                                    </td>
+                                    <td>{{ user.date_created }}</td>            
+                                </tr>
+                                <tr>
+                                    <td>                            
+                                        <p><b>CARD CATEGORY(NGN):</b></p>
+                                    </td>
+                                    <td>{{ user.payment_category }}</td>
+                                    
+                                </tr>
+								<tr>
+									<td>                            
+										<p><b>PAYMENT HISTORY:</b></p>
+									</td>
+									<td><a href="{% url 'client_payment_history' user_id=user.customer_id %}">View history</a></td>                                
+								</tr>
+								
+                                <tr>
+									
+									<form method="post" action="{% url 'payment' user_id=user.customer_id %}">
+										{% csrf_token %}
+										<td>   
+											<input placeholder='Enter Amount' type="number" class="email" id="email" name="amount_paid" value="" step="1" required>                        
+											
+											
+										</td>
+										<td><button type="submit">Submit Payment</button></td>
+										
+										
+									</form>
+                                    
+                                </tr>
+								<tr>
+									<td>
+									{% if error_message %}
+										<script>
+											window.onload = function() {
+												alert("{{ error_message }}");
+											}
+										</script>
+									{% endif %}
+									{% if success_message %}
+										<div class="alert alert-success">
+											{{ success_message }}
+										</div>
+									{% endif %}
+									</td>
+								</tr>
+                                
+                            </tbody>
+                        </table>
+						
+					</div>
+				</div>
+			</div>
+		</main>
+		
+	
+		
+	
+	<!-- CONTENT -->
+	
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			// Find the active <li> element and remove the active class
+			var activeElement = document.querySelector(".side-menu.top .active");
+			if (activeElement) {
+				activeElement.classList.remove("active");
+			}
+		
+			// Find the desired <li> element and add the active class
+			var desiredElement = document.querySelector(".side-menu.top li:nth-child(1)");
+			if (desiredElement) {
+				desiredElement.classList.add("active");
+			}
+		});
+	</script>
+{% endblock %}

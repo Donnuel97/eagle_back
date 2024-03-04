@@ -1,0 +1,51 @@
+<ul class="side-menu top">
+    <li >
+        <a href="{% url 'home' %}">
+            <i class='bx bxs-dashboard' ></i>
+            <span class="text">Dashboard</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'register_agent' %}">
+            <i class='bx bxs-group' ></i>
+            <span class="text">Register agent</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'register_customer' %}">
+            <i class='bx bxs-dashboard' ></i>
+            <span class="text">Register customer</span>
+        </a>
+    </li>
+    
+    <li >
+        <a href="{% url 'agent_list' %}">
+            <i class='bx bxs-group' ></i>
+            <span class="text">Agent list</span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'customer_list' %}">
+            <i class='bx bxs-group' ></i>
+            <span class="text">Customer list</span>
+        </a>
+    </li>
+</ul>
+<ul class="side-menu">
+    <li>
+        <form id="logout-form" action="{% url 'logout' %}" method="post">
+            {% csrf_token %}
+            <button type="submit" style="display: none;"></button>
+        </form>
+        <a href="#" class="logout" id="logout-link">
+            <i class='bx bxs-log-out-circle' ></i>
+            <span class="text">Logout</span>
+        </a>
+    </li>
+    <script>
+        document.getElementById('logout-link').addEventListener('click', function(event) {
+            event.preventDefault();  // Prevent the default link behavior
+            document.getElementById('logout-form').submit();  // Submit the form
+        });
+    </script>
+</ul>

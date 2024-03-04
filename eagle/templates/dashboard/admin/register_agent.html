@@ -1,0 +1,74 @@
+{% extends 'main/admin_main.html' %}
+{% load static %}
+
+{% block content %}
+		<!-- MAIN -->
+		<main>
+			<div class="head-title">
+				<div class="left">
+					<h1>DataSheet</h1>
+					<ul class="breadcrumb">
+						<li>
+							<a href="index.html">Dashboard</a>
+						</li>
+						<li><i class='bx bx-chevron-right' ></i></li>
+						<li>
+							<a href="index.html">Home</a>
+						</li>
+                        <li><i class='bx bx-chevron-right' ></i></li>
+					
+						<li class="active">
+							<a class="active" href="admin_analytics.html">Register agent</a>
+						</li>
+					</ul>
+				</div>
+				
+                
+			</div>
+            
+
+			<div class="table-data">
+				<div class="order">
+					<div class="head">
+						<h3>Register Agent</h3>
+						<i class='bx bx-search' ></i>
+						<i class='bx bx-filter' ></i>
+					</div>
+					<div class="container">
+						<div class="title">Registration</div>
+						<div class="content">
+						  <form action="" method="POST">
+							{% csrf_token %}
+                        	{{form.as_p}}
+                        
+							
+							<div class="button">
+								<input type="submit" name="Submit">
+							</div>
+						  </form>
+						</div>
+					  </div>
+					
+				</div>
+			</div>
+		</main>
+		<!-- MAIN -->
+	</section>
+	<!-- CONTENT -->
+	
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			// Find the active <li> element and remove the active class
+			var activeElement = document.querySelector(".side-menu.top .active");
+			if (activeElement) {
+				activeElement.classList.remove("active");
+			}
+		
+			// Find the desired <li> element and add the active class
+			var desiredElement = document.querySelector(".side-menu.top li:nth-child(2)");
+			if (desiredElement) {
+				desiredElement.classList.add("active");
+			}
+		});
+	</script>
+{% endblock %}

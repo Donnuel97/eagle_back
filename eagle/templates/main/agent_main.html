@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<!-- Boxicons -->
+	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+	<!-- My CSS -->
+	<link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/payment.css' %}">
+
+	<title>AdminHub</title>
+</head>
+<body>
+
+
+	<!-- SIDEBAR -->
+	<section id="sidebar">
+		<a href="index.html" class="brand">
+			<img class='bx' src="{% static 'img/eagle-logo.jpg' %}" style="background-size: cover; position: relative; border-radius: 50%; padding-top: 10px;">
+			
+			<span class="text">AGENT</span>
+		</a>
+		<ul class="side-menu top">
+			<li >
+				<a href="{% url 'payment_start' %}">
+					<i class='bx bxs-dashboard' ></i>
+					<span class="text">Payment</span>
+				</a>
+			</li>
+			<li >
+				<a href="{% url 'register_agent' %}">
+					<i class='bx bxs-wallet'></i>
+					<span class="text">Analytics</span>
+				</a>
+			</li>
+			
+		</ul>
+		<ul class="side-menu">
+			
+            <li>
+                <form id="logout-form" action="{% url 'agent_logout' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" style="display: none;"></button>
+                </form>
+                <a href="#" class="logout" id="logout-link">
+                    <i class='bx bxs-log-out-circle' ></i>
+                    <span class="text">Logout</span>
+                </a>
+            </li>
+            <script>
+                document.getElementById('logout-link').addEventListener('click', function(event) {
+                    event.preventDefault();  // Prevent the default link behavior
+                    document.getElementById('logout-form').submit();  // Submit the form
+                });
+            </script>
+		</ul>
+	</section>
+	<!-- SIDEBAR -->
+
+
+
+	<!-- CONTENT -->
+	<section id="content">
+		<!-- NAVBAR -->
+		<nav>
+			<i class='bx bx-menu' ></i>
+			
+			<form action="#">
+				<div class="form-input">
+					<input type="search" placeholder="Search...">
+					<button type="submit" class="search-btn"><i class='bx bx-search' ></i></button>
+				</div>
+			</form>
+			<input type="checkbox" id="switch-mode" hidden>
+			<label for="switch-mode" class="switch-mode"></label>
+			<a href="#" class="notification">
+				<i class='bx bxs-bell' ></i>
+				<span class="num">8</span>
+			</a>
+			<a href="#" class="profile">
+				<img src="assets/img/people.png">
+			</a>
+		</nav>
+		<!-- NAVBAR -->
+
+		<!-- MAIN -->
+		{% block content %}
+
+
+
+		{% endblock %}
+		<!-- MAIN -->
+	</section>
+	<!-- CONTENT -->
+	
+
+	<script src="assets/js/script.js"></script>
+</body>
+</html>
