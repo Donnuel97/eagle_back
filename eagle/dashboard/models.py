@@ -21,11 +21,11 @@ class Admin(models.Model):
         return self.username
 
 class Agent(models.Model):
-    agent_id = models.IntegerField(primary_key=True)
+    agent_id = models.IntegerField(primary_key=True,max_length=5,unique=True)
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
-    phone_nunmber = models.CharField(max_length=11,null=True)
+    phone_number = models.CharField(max_length=11,null=True,unique=True)
 
     def __str__(self):
         return self.username
@@ -33,12 +33,12 @@ class Agent(models.Model):
     
 
 class Customer(models.Model):
-    customer_id = models.IntegerField(primary_key=True)
+    customer_id = models.IntegerField(primary_key=True, max_length=5,unique=True)
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
     payment_category = models.IntegerField(default=0)
-    phone_nunmber = models.CharField(max_length=11,null=True)
+    phone_number = models.CharField(max_length=11,null=True,unique=True)
 
     def __str__(self):
         return self.username
@@ -78,9 +78,6 @@ class Payments(models.Model):
                 self.status = "Expired"
             else:
                 self.status = "Active"
-        
-        if self.customer.payment_category != 0 and self.amount_paid % self.customer.payment_category != 0:
-            raise ValidationError("Invalid Entry.")
         
         super().save(*args, **kwargs)
 

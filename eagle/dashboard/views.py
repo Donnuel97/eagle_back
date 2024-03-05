@@ -110,8 +110,9 @@ def client_payment_history(request, user_id):
     return render(request, 'dashboard/agent/history.html', {'user': user, 'user_payments': user_payments})
 
 def admin_payment_history(request, user_id):
+    user = get_object_or_404(Customer, customer_id=user_id)
     user_payments = Payments.objects.filter(customer__customer_id=user_id)
-    return render(request, 'dashboard/admin/payment_history.html', {'user_payments': user_payments})
+    return render(request, 'dashboard/admin/payment_history.html', {'user': user,'user_payments': user_payments})
 
     
 
@@ -139,6 +140,12 @@ def payment(request, user_id):
             payment = form.save(commit=False)
             payment.customer = user
             payment.received_by_id = agent_id  # Set the received_by field to agent_id
+
+            # Additional validation
+            if user.payment_category != 0 and payment.amount_paid % user.payment_category != 0:
+                error_message = "Invalid amount entered, try again."
+                return render(request, 'dashboard/agent/form.html', {'user': user, 'form': form, 'error_message': error_message, 'agent_name': agent_name})
+
             payment.save()
             success_message = 'Payment successful!'
             form = PaymentsForm()  # Reinitialize the form with an empty instance
@@ -170,14 +177,14 @@ def register_customer(request):
 
     if request.method == 'POST':
         form = CustomerForm(request.POST)
-
         if form.is_valid():
             form.save()
-           
+            # Set success message
+            messages.success(request, 'Customer registered successfully!')
             # Redirect to the same page after successful form submission
             return redirect('register_customer')
 
-    context = {'form': form,}
+    context = {'form': form}
     return render(request, 'dashboard/admin/register_customer.html', context)
 
 
@@ -189,6 +196,7 @@ def register_agent(request):
 
         if form.is_valid():
             form.save()
+            messages.success(request, 'Customer registered successfully!')
             # Redirect to the same page after successful form submission
             return redirect('register_agent')
 

@@ -38,14 +38,25 @@
 						<div class="title">Registration</div>
 						<div class="content">
 						  <form action="" method="POST">
-							{% csrf_token %}
-                        	{{form.as_p}}
-                        
+							<div class="user-details">
+								<div class="input-box">
+									{% csrf_token %}
+									{{form.as_p}}
+								</div>
+								
+							</div>
 							
 							<div class="button">
-								<input type="submit" name="Submit">
+								<input type="submit" value="Register">
 							</div>
 						  </form>
+						  	{% if messages %}
+								<ul class="messages">
+									{% for message in messages %}
+									<li class="{{ message.tags }}">{{ message }}</li>
+									{% endfor %}
+								</ul>
+							{% endif %}
 						</div>
 					  </div>
 					
