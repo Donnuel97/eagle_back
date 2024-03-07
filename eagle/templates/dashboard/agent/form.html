@@ -5,6 +5,16 @@
 		<!-- MAIN -->
 		<main>
 			<div class="head-title">
+				{% if error_message %}
+				<div class="notifications">
+        
+				</div>
+				{% endif %}
+				{% if success_message %}
+				<div class="notifications">
+        
+				</div>
+				{% endif %}
 				<div class="left">
 					<h1>Dashboard</h1>
 					<ul class="breadcrumb">
@@ -32,6 +42,7 @@
 			<div class="table-data">
 				<div class="order">
 					<div class="head">
+						
 						<table>
                             
                             <tbody>
@@ -90,17 +101,39 @@
                                 </tr>
 								<tr>
 									<td>
-									{% if error_message %}
-										<script>
-											window.onload = function() {
-												alert("{{ error_message }}");
-											}
-										</script>
-									{% endif %}
+										
+										{%  include 'dashboard/error_message.html' %}
+									
 									{% if success_message %}
-										<div class="alert alert-success">
-											{{ success_message }}
-										</div>
+									<script>
+										document.addEventListener('DOMContentLoaded', function() {
+											
+											
+												let notifications = document.querySelector('.notifications');
+												let type = 'success';
+												let icon = 'fa-solid fa-circle-check';
+												let title = 'Success';
+												let text = '{{ success_message }}';
+												createToast(type, icon, title, text);
+											
+									
+											function createToast(type, icon, title, text) {
+												let newToast = document.createElement('div');
+												newToast.innerHTML = `
+													<div class="toast ${type}">
+														<i class="${icon}"></i>
+														<div class="content">
+															<div class="title">${title}</div>
+															<span>${text}</span>
+														</div>
+														<i class="close fa-solid fa-xmark" onclick="(this.parentElement).remove()"></i>
+													</div>`;
+									
+												notifications.appendChild(newToast);
+												newToast.timeOut = setTimeout(() => newToast.remove(), 3000);
+											}
+										});
+									</script>
 									{% endif %}
 									</td>
 								</tr>

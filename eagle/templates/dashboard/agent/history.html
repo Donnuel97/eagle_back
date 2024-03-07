@@ -62,23 +62,29 @@
 							</tr>
 						</thead>
 						<tbody>
-							{% for payment in user_payments  %}
-							<tr>
-								<td>{{ payment.amount_paid }}</td>
-								<td>{{ payment.payment_duration }}</td>
-								<td>{{ payment.description }}</td>
-								<td>{{ payment.payment_date }}</td>
-								<td>{{ payment.expiry_date }}</td>
-								<td>
-									{% if payment.expiry_date < now %}
-									<p style='color:red;'>Active</p>
-									{% else %}
-										<p style='color:green;'>Active</p>
-									{% endif %}
-								</td>
-								<td>{{ payment.received_by }}</td>
-							</tr>
-							{% endfor %}
+							{% if user_payments %}
+								{% for payment in user_payments  %}
+								<tr>
+									<td>{{ payment.amount_paid }}</td>
+									<td>{{ payment.payment_duration }}</td>
+									<td>{{ payment.description }}</td>
+									<td>{{ payment.payment_date }}</td>
+									<td>{{ payment.expiry_date }}</td>
+									<td>
+										{% if payment.expiry_date < now %}
+										<p style='color:red;'>Active</p>
+										{% else %}
+											<p style='color:green;'>Active</p>
+										{% endif %}
+									</td>
+									<td>{{ payment.received_by }}</td>
+								</tr>
+								{% endfor %}
+							{% else %}
+								<tr>
+									<td colspan="6">No data available</td>
+								</tr>
+							{% endif %}
 						</tbody>
 					</table>
 					

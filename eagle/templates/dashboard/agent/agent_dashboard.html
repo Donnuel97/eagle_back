@@ -115,4 +115,9 @@
 			}
 		});
 	</script>
+	<ul>
+        {% for notification in notifications %}
+            <li>{{ notification.amount_paid }} paid by {{ notification.customer.username }}</li>
+        {% endfor %}
+    </ul>
 {% endblock %}

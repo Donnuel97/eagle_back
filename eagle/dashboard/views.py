@@ -16,7 +16,8 @@ from django.contrib import messages
 from django.contrib.sessions.models import Session
 
 
-
+# Register views:
+# 1. Admin register view
 class RegisterUserView(View):
     def get(self, request):
         form = UserRegistrationForm()
@@ -41,6 +42,37 @@ class RegisterUserView(View):
                 return redirect('home')  # Redirect to the home page after registration
         return render(request, 'registration/register.html', {'form': form})
 
+# 3. Customer register view
+def register_customer(request):
+    form = CustomerForm()
+
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        if form.is_valid():
+            form.save()
+            # Set success message
+            messages.success(request, 'Customer registered successfully!')
+            # Redirect to the same page after successful form submission
+            return redirect('register_customer')
+
+    context = {'form': form}
+    return render(request, 'dashboard/admin/register_customer.html', context)
+
+# 3. Agent register view
+def register_agent(request):
+    form = AgentForm()
+
+    if request.method == 'POST':
+        form = AgentForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Customer registered successfully!')
+            # Redirect to the same page after successful form submission
+            return redirect('register_agent')
+
+    context = {'form': form}
+    return render(request, 'dashboard/admin/register_agent.html', context)
 
        
 def login_user(request):
@@ -172,36 +204,6 @@ class HomeView(TemplateView):
         context['total_customer'] = total_customer
         return context
 
-def register_customer(request):
-    form = CustomerForm()
-
-    if request.method == 'POST':
-        form = CustomerForm(request.POST)
-        if form.is_valid():
-            form.save()
-            # Set success message
-            messages.success(request, 'Customer registered successfully!')
-            # Redirect to the same page after successful form submission
-            return redirect('register_customer')
-
-    context = {'form': form}
-    return render(request, 'dashboard/admin/register_customer.html', context)
-
-
-def register_agent(request):
-    form = AgentForm()
-
-    if request.method == 'POST':
-        form = AgentForm(request.POST)
-
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Customer registered successfully!')
-            # Redirect to the same page after successful form submission
-            return redirect('register_agent')
-
-    context = {'form': form}
-    return render(request, 'dashboard/admin/register_agent.html', context)
 
 
 class Agentlist(ListView):
@@ -216,9 +218,14 @@ class Agentlist(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         total_agents = Agent.objects.count()
-        total_customer = Customer.objects.count()
+        total_customers = Customer.objects.count()
+        
+        # Fetch notifications (you need to implement this based on your notification mechanism)
+        notifications = Payments.objects.filter(...)  # Adjust this filter based on your requirements
+        
         context['total_agents'] = total_agents
-        context['total_customer'] = total_customer
+        context['total_customers'] = total_customers
+        context['notifications'] = notifications  # Add notifications to the context
         return context
     
 class Customerlist(ListView):

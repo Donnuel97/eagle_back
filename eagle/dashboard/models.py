@@ -82,5 +82,5 @@ class Payments(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.customer.username} - {self.amount_paid}"
+        return f"{self.customer.username} - {self.amount_paid}- {self.payment_date}"
 

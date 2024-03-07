@@ -47,26 +47,21 @@
 	
 		<section class="section">
 			<span class="overlay"></span>
-	  
+		
 			<div class="modal-box">
+				<button class="close-btn">X</button>
 				<i class="fa-regular fa-circle-check"></i>
 				<label>Customer code</label>
 				<form method="post" action="{% url 'payment_start' %}">
 					{% csrf_token %}
-					
-					<input placeholder="Enter customer code" type="text" class="email" id="email" name="customer_id" value=""style='width:100%;'>
+					<input placeholder="Enter customer code" type="text" class="email" id="email" name="customer_id" value="" style="width:100%;"required>
 					<div class="buttons">
 						<button type="submit">Submit</button>
-						<button class="close-btn">Close</button>
-						
 					</div>
 				</form>
-				<div class="buttons">
-					
-					
-				</div>
 			</div>
 		</section>
+		
 	
 		<script>
 			const section = document.querySelector(".section");

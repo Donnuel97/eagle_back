@@ -13,7 +13,23 @@ section {
     background: green;
     border-radius: 6px;
     cursor: pointer;
+    
   }
+
+
+  .section {
+    position: relative;
+}
+
+.modal-box {
+    position: relative;
+}
+
+.close-btn {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
   button:hover {
     background-color: #FFD700;
     color: #000;
