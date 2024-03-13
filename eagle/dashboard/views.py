@@ -6,15 +6,18 @@ from .models import *
 from django.views import View
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from .forms import UserRegistrationForm,AgentForm, CustomerForm, PaymentsForm
+from .forms import UserRegistrationForm,AgentForm, CustomerForm, PaymentsForm,CustomerFormEdit
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import make_password, check_password
-from django.views.generic import ListView,  DetailView, TemplateView
+from django.views.generic import ListView,  DetailView, TemplateView, DeleteView
+
+from django.views.generic.edit import UpdateView
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
 from django.contrib import messages
 from django.contrib.sessions.models import Session
-
+from django.db.models import Sum
+from django.urls import reverse_lazy
 
 # Register views:
 # 1. Admin register view
@@ -42,7 +45,7 @@ class RegisterUserView(View):
                 return redirect('home')  # Redirect to the home page after registration
         return render(request, 'registration/register.html', {'form': form})
 
-# 3. Customer register view
+# 2. Customer register view
 def register_customer(request):
     form = CustomerForm()
 
@@ -74,7 +77,9 @@ def register_agent(request):
     context = {'form': form}
     return render(request, 'dashboard/admin/register_agent.html', context)
 
-       
+
+# All Login views
+# 1. Admin login view
 def login_user(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -96,8 +101,7 @@ def login_user(request):
 
     return render(request, 'registration/login.html')
 
-
-
+# 2. Agent login view
 def login_agent(request):
     if request.method == 'POST':
         agent_id = request.POST.get('agent_id')
@@ -116,6 +120,7 @@ def login_agent(request):
 
     return render(request, 'registration/agent_login.html')
 
+# 3. client login/payment starting view
 @agent_login_required
 def payment_start(request):
     if request.method == 'POST':
@@ -136,6 +141,9 @@ def payment_start(request):
     return render(request, 'dashboard/agent/payment_form.html')
 
 
+
+# Payment History view
+# 1
 def client_payment_history(request, user_id):
     user = get_object_or_404(Customer, customer_id=user_id)
     user_payments = Payments.objects.filter(customer__customer_id=user_id)
@@ -188,6 +196,7 @@ def payment(request, user_id):
 
     return render(request, 'dashboard/agent/form.html', {'user': user, 'form': form, 'success_message': success_message, 'error_message': error_message, 'agent_name': agent_name})
 
+
 class HomeView(TemplateView):
     template_name = 'dashboard/admin/index.html'
     
@@ -195,16 +204,22 @@ class HomeView(TemplateView):
         # You can customize the queryset here if needed
         return Customer.objects.all()
     
-
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Calculate total amount paid
+        total_amount_paid = Payments.objects.aggregate(total=Sum('amount_paid'))['total']
+        if total_amount_paid is None:
+            total_amount_paid = 0
+        context['total_amount_paid'] = total_amount_paid
+        
+        # Other context data
         total_agents = Agent.objects.count()
         total_customer = Customer.objects.count()
         context['total_agents'] = total_agents
         context['total_customer'] = total_customer
+        
         return context
-
-
 
 class Agentlist(ListView):
     model = Agent
@@ -221,11 +236,11 @@ class Agentlist(ListView):
         total_customers = Customer.objects.count()
         
         # Fetch notifications (you need to implement this based on your notification mechanism)
-        notifications = Payments.objects.filter(...)  # Adjust this filter based on your requirements
+        
         
         context['total_agents'] = total_agents
         context['total_customers'] = total_customers
-        context['notifications'] = notifications  # Add notifications to the context
+       
         return context
     
 class Customerlist(ListView):
@@ -245,7 +260,22 @@ class Customerlist(ListView):
         context['total_agents'] = total_agents
         context['total_customer'] = total_customer
         return context
-    
+
+class CustomerEditView(UpdateView):
+    model = Customer
+    form_class = CustomerFormEdit
+    template_name = 'dashboard/admin/customer_edit.html'
+    success_url = reverse_lazy('customer_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Customer details updated successfully.')
+        return super().form_valid(form)
+
+class CustomerDeleteView(DeleteView):
+    model = Customer
+    template_name = 'dashboard/admin/confirm_delete.html'
+    success_url = reverse_lazy('customer_list')
+
 def agent_logout(request):
     if 'agent_id' in request.session:
         session_key = request.session.session_key

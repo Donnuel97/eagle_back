@@ -59,37 +59,48 @@
 						<i class='bx bx-search' ></i>
 						<i class='bx bx-filter' ></i>
 					</div>
-					<table>
-						<thead>
-							<tr>
-								<th>ID No.</th>
-								<th>NAMES</th>
-								<th>EMAIL</th>
-                                <th>PAYMENT CATEGORY</th>
-								<th>PAYMENT HISTORY</th>
-								
-							</tr>
-						</thead>
-						<tbody>
-						{% for customer in customer_list %}
-							<tr>
-								<td style='font-size: 12px;'>{{ customer.customer_id }}</td>
-								<td style='font-size: 12px;'>{{ customer.username }}</td>
-								<td style='font-size: 12px;'>{{customer.email}}</td>
-                                <td style='font-size: 12px;'>{{customer.payment_category}}</td>
-								<td style='font-size: 12px;'><a href="{% url 'admin_payment_history' user_id=customer.customer_id %}">View history</a></td>
-								
-							</tr>
-							
-						{% empty %}
-							<tr>
-								<td colspan="7">No data available</td>
-							</tr>
-						{% endfor %}
-							
-							
-						</tbody>
-					</table>
+					<!-- customer_list.html -->
+
+<table>
+    <!-- Table headers -->
+    <thead>
+        <tr>
+            <th>ID No.</th>
+            <th>NAMES</th>
+            <th>EMAIL</th>
+            <th>PAYMENT CATEGORY</th>
+            <th>PAYMENT HISTORY</th>
+            <th>ACTION</th>  <!-- New column for edit button -->
+        </tr>
+    </thead>
+    <tbody>
+        {% for customer in customer_list %}
+        <tr>
+            <!-- Customer details -->
+            <td>{{ customer.customer_id }}</td>
+            <td>{{ customer.username }}</td>
+            <td>{{ customer.email }}</td>
+            <td>{{ customer.payment_category }}</td>
+            <td><a href="{% url 'admin_payment_history' user_id=customer.customer_id %}">View history</a></td>
+            <!-- Edit button/link -->
+            <td><a href="{% url 'customer_edit' pk=customer.pk %}">Edit</a> | <a href="" id="delete">Delete</a></td>
+        </tr>
+        {% empty %}
+        <!-- No data message -->
+        <tr>
+            <td colspan="6">No data available</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+
 				</div>
 			</div>
 		</main>

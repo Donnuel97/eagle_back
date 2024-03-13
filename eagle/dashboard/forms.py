@@ -81,3 +81,17 @@ class CustomerForm(forms.ModelForm):
             'payment_category': forms.TextInput(attrs={'placeholder': 'Enter payment category'}),
         }
 
+class CustomerFormEdit(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['username', 'email', 'payment_category'] 
+        labels = {
+            'username': 'Username',
+            'email': 'Email',
+            'payment_category': 'Payment Category',
+        }
+        widgets = {
+            'username': forms.TextInput(attrs={'placeholder': 'Enter your username'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
+            'payment_category': forms.TextInput(attrs={'placeholder': 'Enter payment category'}),
+        }

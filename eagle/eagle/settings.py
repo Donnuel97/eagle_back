@@ -74,13 +74,23 @@ WSGI_APPLICATION = 'eagle.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# DATABASES = {
+#     # 'default': {
+#     #     'ENGINE': 'django.db.backends.mysql',
+#     #     'NAME': 'eagletr4_demoDjango',
+#     #     'USER': 'eagletr4_emma',
+#     #     'HOST': '131.153.148.82',
+#     #     'PORT': 3306,
+#     #     'PASSWORD': 'July14th1997',
+#     # }
+
+# }
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

@@ -90,6 +90,9 @@ form .input-box span.details{
    height: 45px;
    margin: 35px 0
  }
+ form .button button{
+  cursor: pointer;
+ }
  form .button input{
    height: 100%;
    width: 100%;
