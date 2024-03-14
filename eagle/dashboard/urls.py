@@ -20,10 +20,10 @@ urlpatterns = [
     #path('login/', LoginView.as_view(template_name='registration/login.html'), name='login'),
     path('logout/', views.admin_logout, name='logout'),
     path('agent_logout/', views.agent_logout, name='agent_logout'), 
-    path('register/', RegisterUserView.as_view(), name='register_user'),
+    path('register_admin/', RegisterUserView.as_view(), name='register_user'),
     path('payment-history/<int:user_id>/', views.client_payment_history, name='client_payment_history'),
     path('history/<int:user_id>/', views.admin_payment_history, name='admin_payment_history'),
-    path('eagle', login_user, name='login'),
+    path('eagle_admin', login_user, name='login'),
     # Add other URLs as needed
 ]
 

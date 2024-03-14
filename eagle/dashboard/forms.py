@@ -77,21 +77,23 @@ class CustomerForm(forms.ModelForm):
             'customer_id': forms.TextInput(attrs={'placeholder': 'Enter customer_id'}),
             'username': forms.TextInput(attrs={'placeholder': 'Enter your username'}),
             'email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
-            'phone_number': forms.TextInput(attrs={'placeholder': 'Enter your phone number'}),
+            'phone_number': forms.TextInput(attrs={'placeholder': 'Enter  phone number'}),
             'payment_category': forms.TextInput(attrs={'placeholder': 'Enter payment category'}),
         }
 
 class CustomerFormEdit(forms.ModelForm):
     class Meta:
         model = Customer
-        fields = ['username', 'email', 'payment_category'] 
+        fields = ['username', 'email','phone_number', 'payment_category'] 
         labels = {
             'username': 'Username',
             'email': 'Email',
+            'phone_number': 'Phone Number',
             'payment_category': 'Payment Category',
         }
         widgets = {
             'username': forms.TextInput(attrs={'placeholder': 'Enter your username'}),
-            'email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
-            'payment_category': forms.TextInput(attrs={'placeholder': 'Enter payment category'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Edit email'}),
+            'payment_category': forms.TextInput(attrs={'placeholder': 'Edit payment category'}),
+            'phone_number': forms.TextInput(attrs={'placeholder': 'Edit  phone number'}),
         }
