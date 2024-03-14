@@ -23,7 +23,7 @@ urlpatterns = [
     path('register_admin/', RegisterUserView.as_view(), name='register_user'),
     path('payment-history/<int:user_id>/', views.client_payment_history, name='client_payment_history'),
     path('history/<int:user_id>/', views.admin_payment_history, name='admin_payment_history'),
-    path('eagle_admin', login_user, name='login'),
+    path('eagle_admin', login_admin, name='login_admin'),
     # Add other URLs as needed
 ]
 

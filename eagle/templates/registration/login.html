@@ -10,7 +10,7 @@
 </head>
 <body>
   <div class="wrapper">
-    <form method="post" action="{% url 'login' %}">
+    <form method="post" action="{% url 'login_admin' %}">
       {% csrf_token %}
         <h2>Login</h2>
         <div class="input-field">
@@ -22,19 +22,16 @@
             <label>Enter your password</label>
         </div>
         <div class="forget">
-            <label for="remember">
-            <input type="checkbox" id="remember">
-            <p>Remember me</p>
-            </label>
-            <a href="#">Forgot password?</a>
+            
         </div>
         <button type="submit">Log In</button>
-        <div class="register">
-            <p>Go <a href="{% url 'home' %}">back</a></p>
-        </div>
+        
 
     </form>
-    
+        
+        {% if error_message %}           
+          <span>{{ error_message }}</span>
+        {% endif %}
     
   </div>
 </body>

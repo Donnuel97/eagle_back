@@ -1,5 +1,5 @@
 # views.py
-from .decorators import agent_login_required,customer_login_required
+from .decorators import agent_login_required,customer_login_required,login_required
 from django.utils.decorators import method_decorator
 from django.shortcuts import render, redirect
 from .models import *
@@ -46,6 +46,7 @@ class RegisterUserView(View):
         return render(request, 'registration/register.html', {'form': form})
 
 # 2. Customer register view
+@login_required
 def register_customer(request):
     form = CustomerForm()
 
@@ -62,6 +63,7 @@ def register_customer(request):
     return render(request, 'dashboard/admin/register_customer.html', context)
 
 # 3. Agent register view
+@login_required
 def register_agent(request):
     form = AgentForm()
 
@@ -80,7 +82,9 @@ def register_agent(request):
 
 # All Login views
 # 1. Admin login view
-def login_user(request):
+def login_admin(request):
+    error_message = ''  # Initialize error_message with an empty string
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -88,18 +92,22 @@ def login_user(request):
         try:
             user = Admin.objects.get(username=username)
         except Admin.DoesNotExist:
-            return HttpResponse('Invalid username or password')
+            # Display a generic error message
+            messages.error(request, 'Invalid username or password')
+            return redirect('login_admin')  # Redirect back to the login page
 
         # Use check_password to compare hashed passwords
         if check_password(password, user.password):
             request.session['username'] = user.username
             # Passwords match, redirect to home
-            return redirect('home')
+            return redirect('home')  # Assuming 'home' is a valid URL pattern
         else:
-            # Passwords do not match
-            return HttpResponse('Invalid username or password')
+            # Set error_message for invalid password
+            error_message = "Invalid username or password"
+            return redirect('login_admin')
 
-    return render(request, 'registration/login.html')
+    # Pass error_message as context to the template
+    return render(request, 'registration/login.html', {'error_message': error_message})
 
 # 2. Agent login view
 def login_agent(request):
@@ -196,7 +204,7 @@ def payment(request, user_id):
 
     return render(request, 'dashboard/agent/form.html', {'user': user, 'form': form, 'success_message': success_message, 'error_message': error_message, 'agent_name': agent_name})
 
-
+@method_decorator(login_required, name='dispatch')
 class HomeView(TemplateView):
     template_name = 'dashboard/admin/index.html'
     
@@ -221,6 +229,7 @@ class HomeView(TemplateView):
         
         return context
 
+@method_decorator(login_required, name='dispatch')
 class Agentlist(ListView):
     model = Agent
     template_name = 'dashboard/admin/team.html'
@@ -242,7 +251,8 @@ class Agentlist(ListView):
         context['total_customers'] = total_customers
        
         return context
-    
+
+@method_decorator(login_required, name='dispatch')  
 class Customerlist(ListView):
     model = Customer
     template_name = 'dashboard/admin/customer_list.html'
@@ -261,6 +271,7 @@ class Customerlist(ListView):
         context['total_customer'] = total_customer
         return context
 
+@method_decorator(login_required, name='dispatch')
 class CustomerEditView(UpdateView):
     model = Customer
     form_class = CustomerFormEdit
@@ -295,4 +306,4 @@ def admin_logout(request):
         session_key = request.session.session_key
         request.session.flush()  # Clear the session data
         Session.objects.filter(session_key=session_key).delete()  # Delete the session from the database
-    return redirect('login')  # Redirect to the login page after logout\
+    return redirect('login_admin')  # Redirect to the login page after logout\

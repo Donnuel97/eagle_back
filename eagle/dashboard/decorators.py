@@ -24,3 +24,13 @@ def customer_login_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return wrapped_view
+
+from django.shortcuts import redirect
+
+def login_required(view_func):
+    def wrapped_view(request, *args, **kwargs):
+        if 'username' in request.session:
+            return view_func(request, *args, **kwargs)
+        else:
+            return redirect('login_admin')  # Redirect to your login page
+    return wrapped_view
