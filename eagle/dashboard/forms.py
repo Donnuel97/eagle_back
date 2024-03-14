@@ -97,3 +97,24 @@ class CustomerFormEdit(forms.ModelForm):
             'payment_category': forms.TextInput(attrs={'placeholder': 'Edit payment category'}),
             'phone_number': forms.TextInput(attrs={'placeholder': 'Edit  phone number'}),
         }
+
+
+class AgentEditForm(forms.ModelForm):
+    class Meta:
+        model = Agent
+        fields = ['username', 'email', 'phone_number']
+        # If you want to customize labels or widgets, you can do it here
+        labels = {
+            
+            'username': 'Username',
+            'email': 'Email',
+            'phone_number': 'Phone Number',
+           
+        }
+        widgets = {
+            
+            'username': forms.TextInput(attrs={'placeholder': 'Enter your username'}),
+            'email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
+            'phone_number': forms.TextInput(attrs={'placeholder': 'Enter your phone number'}),
+            
+        }

@@ -1,0 +1,83 @@
+{% extends 'main/admin_main.html' %}
+{% load static %}
+
+{% block content %}
+<!-- MAIN -->
+<main>
+    <div class="head-title">
+        <div class="left">
+            <h1>DataSheet</h1>
+            <ul class="breadcrumb">
+                <li>
+                    <a href="index.html">Dashboard</a>
+                </li>
+                <li><i class='bx bx-chevron-right' ></i></li>
+                <li>
+                    <a href="index.html">Home</a>
+                </li>
+                <li><i class='bx bx-chevron-right' ></i></li>
+                <li>
+                    <a  href="admin_analytics.html">Analytics</a>
+                </li>
+                <li><i class='bx bx-chevron-right' ></i></li>
+                <li class="active">
+                    <a class="active" href="admin_analytics.html">Team</a>
+                </li>
+            </ul>
+        </div>
+        <a href="#" class="btn-download">
+            <i class='bx bxs-cloud-download' ></i>
+            <span class="text">Download PDF</span>
+        </a>
+        
+    </div>
+  
+
+    <div class="table-data">
+        <div class="order">
+            <div class="head">
+                <h3>Customer Edit</h3>
+                <i class='bx bx-search' ></i>
+                <i class='bx bx-filter' ></i>
+            </div>
+            <!-- customer_list.html -->
+
+        
+            <h1>Edit Agent</h1>
+           
+            <form  method="POST">
+                       
+                <div class="user-details">
+                    <div class="input-box">
+                        {% csrf_token %}
+                        {{form.as_p}}
+                    </div>
+                    
+                </div>
+                <div class="button">
+                    <input type="submit" value="Save Changes">
+                </div>
+                
+            </form>
+            
+        </div>
+    </div>
+</main>
+<!-- MAIN -->
+</section>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Find the active <li> element and remove the active class
+        var activeElement = document.querySelector(".side-menu.top .active");
+        if (activeElement) {
+            activeElement.classList.remove("active");
+        }
+    
+        // Find the desired <li> element and add the active class
+        var desiredElement = document.querySelector(".side-menu.top li:nth-child(6)");
+        if (desiredElement) {
+            desiredElement.classList.add("active");
+        }
+    });
+</script>
+{% endblock %}

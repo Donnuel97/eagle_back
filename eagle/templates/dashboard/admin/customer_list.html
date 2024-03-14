@@ -26,8 +26,8 @@
 					</ul>
 				</div>
 				<div class="btn-download">
-					<button class="text" id="export-pdf">Download PDF</button>
-					<button id="downloadexcel">Export as Excel</button>
+					<button class="text" id="export-pdf">PDF</button>
+					<button id="downloadexcel">Excel</button>
 				</div>
                 
 			</div>
@@ -83,7 +83,10 @@
             <td>{{ customer.payment_category }}</td>
             <td><a href="{% url 'admin_payment_history' user_id=customer.customer_id %}">View history</a></td>
             <!-- Edit button/link -->
-            <td><a href="{% url 'customer_edit' pk=customer.pk %}">Edit</a> | <a href="" id="delete">Delete</a></td>
+            <td>
+				<a href="{% url 'customer_edit' pk=customer.pk %}">Edit</a> |
+				<a data-modal-target="#modal" data-customer-id="{{ customer.id }}" class="delete-button">Delete</a>
+			</td>
         </tr>
         {% empty %}
         <!-- No data message -->
@@ -93,7 +96,12 @@
         {% endfor %}
     </tbody>
 </table>
-{% if messages %}
+
+{%  include 'dashboard/admin/delete-customer.html' %}
+   
+  </div>
+  <div id="overlay"></div>
+			{% if messages %}
             <ul class="messages">
                 {% for message in messages %}
                 <li>{{ message }}</li>
@@ -106,6 +114,7 @@
 		</main>
 		<!-- MAIN -->
 	</section>
+	
 	<!-- CONTENT -->
 	<script>
 		document.addEventListener("DOMContentLoaded", function() {

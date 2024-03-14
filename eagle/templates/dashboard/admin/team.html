@@ -28,8 +28,8 @@
 				
 					
 					<div class="btn-download">
-						<button class="text" id="export-pdf">Download PDF</button>
-						<button id="downloadexcel">Export as Excel</button>
+						<button class="text" id="export-pdf"> PDF</button>
+						<button id="downloadexcel"> Excel</button>
 					</div>
 					
 				
@@ -70,6 +70,8 @@
 								<th>ID No.</th>
 								<th>NAMES</th>
 								<th>EMAIL</th>
+								<th>PHONE NUMBER</th>
+								<th>ACTION</th> 
 							</tr>
 						</thead>
 						<tbody>
@@ -78,7 +80,11 @@
 								<td style='font-size: 12px;'>{{ agent.agent_id }}</td>
 								<td style='font-size: 12px;'>{{ agent.username }}</td>
 								<td style='font-size: 12px;'>{{agent.email}}</td>
-								
+								<td style='font-size: 12px;'>{{agent.phone_number}}</td>
+								<td>
+									<a href="{% url 'agent_edit' pk=agent.pk %}">Edit</a> |
+									
+								</td>
 							</tr>
 							
 						{% empty %}

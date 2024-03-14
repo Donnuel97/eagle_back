@@ -6,7 +6,7 @@ from .models import *
 from django.views import View
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from .forms import UserRegistrationForm,AgentForm, CustomerForm, PaymentsForm,CustomerFormEdit
+from .forms import UserRegistrationForm,AgentForm, CustomerForm, PaymentsForm,CustomerFormEdit,AgentEditForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import make_password, check_password
 from django.views.generic import ListView,  DetailView, TemplateView, DeleteView
@@ -252,8 +252,20 @@ class Agentlist(ListView):
        
         return context
 
+@method_decorator(login_required, name='dispatch')
+class AgentEditView(UpdateView):
+    model = Agent
+    form_class = AgentEditForm
+    template_name = 'dashboard/admin/agent_edit.html'
+    success_url = reverse_lazy('agent_list')
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Agent details updated successfully.')
+        return super().form_valid(form)
+
+
 @method_decorator(login_required, name='dispatch')  
-class Customerlist(ListView):
+class CustomerList(ListView):
     model = Customer
     template_name = 'dashboard/admin/customer_list.html'
     context_object_name = 'customer_list'  # Specify the context variable name for the queryset
@@ -270,6 +282,10 @@ class Customerlist(ListView):
         context['total_agents'] = total_agents
         context['total_customer'] = total_customer
         return context
+
+class CustomerDelete(DeleteView):
+    model = Customer
+    success_url = reverse_lazy('customer-list') 
 
 @method_decorator(login_required, name='dispatch')
 class CustomerEditView(UpdateView):

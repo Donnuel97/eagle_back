@@ -1,0 +1,10 @@
+<div class="modal" id="modal">
+    <div class="modal-header">
+        <div class="title">Are you sure you wish to delete?</div>
+        <form id="delete-form" method="POST">
+            {% csrf_token %}
+            <button type="submit" id="confirm-delete" style="background-color: green;">Yes</button>
+            <button type="button" data-close-button class="close-button" style="background-color: red;">No</button>
+        </form>
+    </div>
+</div>
