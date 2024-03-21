@@ -4,6 +4,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.hashers import make_password
+from django.db import IntegrityError
 
 class Admin(models.Model):
     username = models.CharField(max_length=30, unique=True, default='admin')
@@ -21,11 +22,11 @@ class Admin(models.Model):
         return self.username
 
 class Agent(models.Model):
-    agent_id = models.IntegerField(primary_key=True,max_length=5,unique=True)
+    agent_id = models.CharField(primary_key=True, max_length=50, unique=True)
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
-    phone_number = models.CharField(max_length=11,null=True,unique=True)
+    phone_number = models.CharField(max_length=11, null=True, unique=True)
 
     def __str__(self):
         return self.username
@@ -33,15 +34,17 @@ class Agent(models.Model):
     
 
 class Customer(models.Model):
-    customer_id = models.IntegerField(primary_key=True, max_length=5,unique=True)
+    customer_id = models.CharField(primary_key=True, max_length=50, unique=True)
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(unique=True)
     date_created = models.DateTimeField(auto_now_add=True, null=True)
     payment_category = models.IntegerField(default=0)
-    phone_number = models.CharField(max_length=11,null=True,unique=True)
+    phone_number = models.CharField(max_length=11, null=True, unique=True)
 
     def __str__(self):
         return self.username
+    
+    
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
@@ -70,7 +73,11 @@ class Payments(models.Model):
 
         self.payment_date = timezone.now()
 
-        if self.payment_duration:
+        # Calculate expiry date based on previous payment if available
+        previous_payment = self.customer.payments.order_by('-payment_date').first()
+        if previous_payment:
+            self.expiry_date = previous_payment.expiry_date + timezone.timedelta(days=self.payment_duration)
+        else:
             self.expiry_date = self.payment_date + timezone.timedelta(days=self.payment_duration)
 
         if self.expiry_date is not None:
@@ -82,5 +89,4 @@ class Payments(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.customer.username} - {self.amount_paid}- {self.payment_date}"
-
+        return f"{self.customer.username} - {self.amount_paid} - {self.payment_date}"

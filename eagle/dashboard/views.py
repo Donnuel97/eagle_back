@@ -1,7 +1,7 @@
 # views.py
 from .decorators import agent_login_required,customer_login_required,login_required
 from django.utils.decorators import method_decorator
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import *
 from django.views import View
 from django.shortcuts import render, redirect
@@ -10,7 +10,7 @@ from .forms import UserRegistrationForm,AgentForm, CustomerForm, PaymentsForm,Cu
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.hashers import make_password, check_password
 from django.views.generic import ListView,  DetailView, TemplateView, DeleteView
-
+from django.urls import reverse
 from django.views.generic.edit import UpdateView
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -197,6 +197,9 @@ def payment(request, user_id):
             payment.save()
             success_message = 'Payment successful!'
             form = PaymentsForm()  # Reinitialize the form with an empty instance
+
+            # Redirect to another page upon successful payment
+            return redirect(reverse('payment_start'))  # Replace 'success_page' with the name of your success page URL pattern
         else:
             error_message = "Form is not valid"
     else:

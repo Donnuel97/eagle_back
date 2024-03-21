@@ -43,7 +43,9 @@
 
 
 			<div class="table-data" >
+				
 				<div class="order">
+
 					<div class="head">
 						<p><span><b>Client Name</b>: {{user.username}}</span></p>
 						<p><span><b>Client ID</b>: {{user.customer_id }}</span></p>
@@ -85,6 +87,17 @@
 									<td colspan="6">No data available</td>
 								</tr>
 							{% endif %}
+							<tr>
+								<td>
+									<a href="#" onclick="goBack()">Go Back</a>
+
+									<script>
+									function goBack() {
+									window.history.back();
+									}
+									</script>
+								</td>
+							</tr>
 						</tbody>
 					</table>
 					
