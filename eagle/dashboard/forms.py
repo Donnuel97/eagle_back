@@ -35,6 +35,10 @@ class PaymentsForm(forms.ModelForm):
         fields = ['amount_paid']
 
    
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['customer_id', 'username', 'email', 'payment_category', 'phone_number']
 
 
 
@@ -42,44 +46,30 @@ class AgentForm(forms.ModelForm):
     class Meta:
         model = Agent
         fields = ['agent_id', 'username', 'email', 'phone_number']
-        # If you want to customize labels or widgets, you can do it here
-        labels = {
-            'agent_id': 'Agent ID',
-            'username': 'Username',
-            'email': 'Email',
-            'phone_number': 'Phone Number',
-           
-        }
-        widgets = {
-            'agent_id': forms.TextInput(attrs={'placeholder': 'Enter agent_id'}),
-            'username': forms.TextInput(attrs={'placeholder': 'Enter your username'}),
-            'email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
-            'phone_number': forms.TextInput(attrs={'placeholder': 'Enter your phone number'}),
-            
-        }
+       
 
            
 
 
-class CustomerForm(forms.ModelForm):
-    class Meta:
-        model = Customer
-        fields = ['customer_id', 'username', 'email', 'phone_number', 'payment_category']
-        # If you want to customize labels or widgets, you can do it here
-        labels = {
-            'customer_id': 'Customer ID',
-            'username': 'Username',
-            'email': 'Email',
-            'phone_number': 'Phone Number',
-            'payment_category': 'Payment Category',
-        }
-        widgets = {
-            'customer_id': forms.TextInput(attrs={'placeholder': 'Enter customer_id'}),
-            'username': forms.TextInput(attrs={'placeholder': 'Enter your username'}),
-            'email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
-            'phone_number': forms.TextInput(attrs={'placeholder': 'Enter  phone number'}),
-            'payment_category': forms.TextInput(attrs={'placeholder': 'Enter payment category'}),
-        }
+# class CustomerForm(forms.ModelForm):
+#     class Meta:
+#         model = Customer
+#         fields = ['customer_id', 'username', 'email', 'phone_number', 'payment_category']
+#         # If you want to customize labels or widgets, you can do it here
+#         labels = {
+#             'customer_id': 'Customer ID',
+#             'username': 'Username',
+#             'email': 'Email',
+#             'phone_number': 'Phone Number',
+#             'payment_category': 'Payment Category',
+#         }
+#         widgets = {
+#             'customer_id': forms.TextInput(attrs={'placeholder': 'Enter customer_id'}),
+#             'username': forms.TextInput(attrs={'placeholder': 'Enter your username'}),
+#             'email': forms.EmailInput(attrs={'placeholder': 'Enter your email'}),
+#             'phone_number': forms.TextInput(attrs={'placeholder': 'Enter  phone number'}),
+#             'payment_category': forms.TextInput(attrs={'placeholder': 'Enter payment category'}),
+#         }
 
 class CustomerFormEdit(forms.ModelForm):
     class Meta:

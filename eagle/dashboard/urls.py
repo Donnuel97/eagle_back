@@ -15,7 +15,7 @@ urlpatterns = [
     path('customers/', views.CustomerList.as_view(), name="customer_list"),
     path('register agent/', register_agent, name='register_agent'),
     path('register customer/', register_customer, name='register_customer'),
-    path('customer/edit/<str:pk>/', CustomerEditView.as_view(), name='customer_edit'),
+    # path('customer/edit/<str:pk>/', CustomerEditView.as_view(), name='customer_edit'),
     path('agent/edit/<str:pk>/', AgentEditView.as_view(), name='agent_edit'),
     #path('customer/<int:pk>/delete/', views.CustomerDelete.as_view(), name='customer_delete'),
     #path('login/', LoginView.as_view(template_name='registration/login.html'), name='login'),
@@ -26,7 +26,17 @@ urlpatterns = [
     path('payment-history/<str:user_id>/', views.client_payment_history, name='client_payment_history'),
      path('history/<str:user_id>/', views.admin_payment_history, name='admin_payment_history'),
     path('eagle_admin', login_admin, name='login_admin'),
+    path('toggle-status/', toggle_customer_status, name='toggle_customer_status'),
+    path('edit_customer/', views.edit_customer, name='edit_customer'),
     # Add other URLs as needed
+    path('test', test, name='test'),
+    path('fetch-customer-data/', fetch_customer_data, name='fetch_customer_data'),
+    path('submit-payment/', submit_payment, name='submit_payment'),
+     #path('payment-start/', views.payment_start, name='payment_start'),
+    path('edit-agent/', EditAgentView.as_view(), name='edit_agent'),
+    path('toggle-agent-status/', ToggleAgentStatusView.as_view(), name='toggle_agent_status'),  # New URL for toggling status
+    path('get-site-settings/', get_site_settings, name='get_site_settings'),
+    path('save-site-settings/', save_site_settings, name='save_site_settings'),
 ]
 
 

@@ -26,7 +26,16 @@ SECRET_KEY = 'django-insecure-h7eo=pj7vzoo9^5tfyg$_(+%iwfi+l*4zzz3!war38=s+x22t%
 DEBUG = True
 
 ALLOWED_HOSTS = []
+CRISPY_TEMPLATE_PACK = 'bootstrap4'  # For Bootstrap 4
 
+# settings.py
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # For Gmail
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'emmanuelemesue97@gmail.com'  # Your email
+EMAIL_HOST_PASSWORD = 'July14th1997#'  # Your email password
 
 # Application definition
 
@@ -38,6 +47,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'dashboard',
+    'crispy_forms',
+    'crispy_bootstrap4',  # Add crispy-bootstrap4 here
 ]
 
 MIDDLEWARE = [

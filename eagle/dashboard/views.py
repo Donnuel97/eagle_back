@@ -18,6 +18,96 @@ from django.contrib import messages
 from django.contrib.sessions.models import Session
 from django.db.models import Sum
 from django.urls import reverse_lazy
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from django.http import HttpResponseForbidden
+from django.utils import timezone
+from datetime import datetime
+import logging
+from django.core.mail import send_mail
+
+# Create a logger
+logger = logging.getLogger(__name__)
+
+def test(request):
+    agent_name = request.session.get('agent_name', None)
+    return render(request, 'dashboard/admin2/register_client.html')
+
+@csrf_exempt
+def fetch_customer_data(request):
+    if request.method == 'POST':
+        
+        customer_id = request.POST.get('customer_id')
+        customer = get_object_or_404(Customer, customer_id=customer_id)
+        return JsonResponse({
+            'customer': {
+                'username': customer.username,
+                'email': customer.email,
+                'phone_number': customer.phone_number,
+            },
+            'status': 'success'
+        })
+
+
+@csrf_exempt
+def submit_payment(request):
+    if request.method == 'POST':
+        try:
+            customer_id = request.POST.get('customer_id')
+            amount_paid = request.POST.get('amount_paid')
+            description = request.POST.get('description')
+            received_by_username = request.POST.get('received_by')  # Assuming you're passing the agent's username
+
+            # Convert the numeric fields to appropriate types
+            try:
+                amount_paid = float(amount_paid)  # Convert amount to float
+            except ValueError:
+                return JsonResponse({'status': 'Invalid amount paid value'}, status=400)
+
+            logger.debug(f"Received data: customer_id={customer_id}, amount_paid={amount_paid}, description={description}, received_by={received_by_username}")
+
+            # Fetch the customer
+            try:
+                customer = Customer.objects.get(customer_id=customer_id)
+            except Customer.DoesNotExist:
+                return JsonResponse({'status': 'Customer does not exist'}, status=404)
+
+            # Fetch the Agent using the `username`
+            try:
+                agent = Agent.objects.get(username=received_by_username)  # Use `username` to get the agent
+            except Agent.DoesNotExist:
+                return JsonResponse({'status': 'Agent does not exist'}, status=404)
+
+            # Get the customer's payment category
+            payment_category = customer.payment_category
+            if payment_category <= 0:
+                return JsonResponse({'status': 'Invalid payment category for customer'}, status=400)
+
+            # Check if the amount_paid is divisible by the payment_category
+            if amount_paid % payment_category != 0:
+                return JsonResponse({'status': 'Amount paid is not divisible by payment category'}, status=400)
+
+            # Calculate the payment duration (daily basis)
+            payment_duration = int(amount_paid // payment_category)  # Division to calculate the duration in days
+
+            # Create the payment record
+            payment = Payments.objects.create(
+                customer=customer,
+                amount_paid=amount_paid,
+                payment_duration=payment_duration,  # Save the calculated payment duration
+                description=description,
+                received_by=agent  # Pass the agent instance here
+            )
+
+            logger.info(f"Payment created successfully for customer {customer_id}.")
+            return JsonResponse({'status': 'Payment successful'})
+
+        except Exception as e:
+            logger.error(f"An error occurred while processing the payment: {e}")
+            return JsonResponse({'status': str(e)}, status=500)
+
+    return JsonResponse({'status': 'Invalid request'}, status=400)
+
 
 # Register views:
 # 1. Admin register view
@@ -60,7 +150,7 @@ def register_customer(request):
             return redirect('register_customer')
 
     context = {'form': form}
-    return render(request, 'dashboard/admin/register_customer.html', context)
+    return render(request, 'dashboard/admin2/register_client.html', context)
 
 # 3. Agent register view
 @login_required
@@ -77,7 +167,7 @@ def register_agent(request):
             return redirect('register_agent')
 
     context = {'form': form}
-    return render(request, 'dashboard/admin/register_agent.html', context)
+    return render(request, 'dashboard/admin2/register_agent.html', context)
 
 
 # All Login views
@@ -116,37 +206,40 @@ def login_agent(request):
 
         try:
             user = Agent.objects.get(agent_id=agent_id)
+            agent_name = user.username  # Fetch agent name
         except Agent.DoesNotExist:
             return HttpResponse('Agent does not exist')
 
-        # If the agent is found, store agent_id in session
+        # Store agent_id and agent_name in session
         if user is not None:
             request.session['agent_id'] = user.agent_id
-            return redirect('payment_start')
+            request.session['agent_name'] = agent_name  # Store agent name in session
+            print("Agent Name stored in session:", request.session['agent_name'])  # Debug line
+            return redirect('payment_start')  # Adjust this redirect if necessary
         else:
             return HttpResponse('Invalid ID')
 
     return render(request, 'registration/agent_login.html')
 
+
+
+
+
 # 3. client login/payment starting view
 @agent_login_required
 def payment_start(request):
+    agent_name = request.session.get('agent_name', None)
     if request.method == 'POST':
         customer_id = request.POST.get('customer_id')
-
         try:
             user = Customer.objects.get(customer_id=customer_id)
         except Customer.DoesNotExist:
             return HttpResponse('Customer does not exist')
 
-        if user:
-            request.session['customer_id'] = user.customer_id
-            # User exists, redirect to agent with user details
-            return redirect('payment', user_id=user.customer_id)
-        else:
-            return HttpResponse('Invalid id')
-
-    return render(request, 'dashboard/agent/payment_form.html')
+        request.session['customer_id'] = user.customer_id
+        return redirect('payment', user_id=user.customer_id)
+    
+    return render(request, 'dashboard/agent2/agent_dash.html', {'agent_name': agent_name})
 
 
 
@@ -209,7 +302,7 @@ def payment(request, user_id):
 
 @method_decorator(login_required, name='dispatch')
 class HomeView(TemplateView):
-    template_name = 'dashboard/admin/index.html'
+    template_name = 'dashboard/admin2/dashboard.html'
     
     def get_queryset(self):
         # You can customize the queryset here if needed
@@ -235,11 +328,10 @@ class HomeView(TemplateView):
 @method_decorator(login_required, name='dispatch')
 class Agentlist(ListView):
     model = Agent
-    template_name = 'dashboard/admin/team.html'
-    context_object_name = 'agent_list'  # Specify the context variable name for the queryset
+    template_name = 'dashboard/admin2/agent_list.html'
+    context_object_name = 'agent_list'  
 
     def get_queryset(self):
-        # You can customize the queryset here if needed
         return Agent.objects.all()
 
     def get_context_data(self, **kwargs):
@@ -247,14 +339,41 @@ class Agentlist(ListView):
         total_agents = Agent.objects.count()
         total_customers = Customer.objects.count()
         
-        # Fetch notifications (you need to implement this based on your notification mechanism)
-        
-        
         context['total_agents'] = total_agents
         context['total_customers'] = total_customers
        
         return context
 
+class ToggleAgentStatusView(View):
+    def post(self, request, *args, **kwargs):
+        agent_id = request.POST.get('agent_id')
+        agent = get_object_or_404(Agent, agent_id=agent_id)
+        
+        # Toggle status
+        if agent.status == 1:
+            agent.status = 0  # Suspend
+        else:
+            agent.status = 1  # Activate
+            
+        agent.save()
+        
+        return JsonResponse({'success': True, 'new_status': agent.status})
+
+
+class EditAgentView(View):
+    def post(self, request, *args, **kwargs):
+        agent_id = request.POST.get('agent_id')
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        phone_number = request.POST.get('phone_number')
+
+        agent = get_object_or_404(Agent, agent_id=agent_id)
+        agent.username = username
+        agent.email = email
+        agent.phone_number = phone_number
+        agent.save()
+
+        return JsonResponse({'success': True})
 @method_decorator(login_required, name='dispatch')
 class AgentEditView(UpdateView):
     model = Agent
@@ -270,7 +389,7 @@ class AgentEditView(UpdateView):
 @method_decorator(login_required, name='dispatch')  
 class CustomerList(ListView):
     model = Customer
-    template_name = 'dashboard/admin/customer_list.html'
+    template_name = 'dashboard/admin2/client_list.html'
     context_object_name = 'customer_list'  # Specify the context variable name for the queryset
 
     def get_queryset(self):
@@ -286,6 +405,63 @@ class CustomerList(ListView):
         context['total_customer'] = total_customer
         return context
 
+@csrf_exempt
+@csrf_exempt
+def toggle_customer_status(request):
+    if request.method == 'POST':
+        customer_id = request.POST.get('customer_id')
+        new_status = int(request.POST.get('status'))
+        activation_expiry = request.POST.get('activation_expiry')  # Get the selected expiry date
+
+        try:
+            customer = Customer.objects.get(customer_id=customer_id)
+            
+            if new_status == 1:
+                if activation_expiry:
+                    # Parse the date selected by the admin
+                    activation_expiry_date = datetime.strptime(activation_expiry, '%Y-%m-%d')
+                    customer.activation_expiry = activation_expiry_date
+                else:
+                    # Default expiry date to 1 year if no date is provided
+                    customer.activation_expiry = timezone.now() + timedelta(days=365)
+                
+                customer.status = 1
+            else:
+                # Suspend the customer
+                customer.status = 0
+                customer.activation_expiry = None  # Clear expiry when suspended
+
+            customer.save()
+
+            return JsonResponse({'success': True, 'new_status': customer.status, 'expiry': customer.activation_expiry})
+        except Customer.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Customer not found'})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+def edit_customer(request):
+    if request.method == 'POST':
+        customer_id = request.POST.get('customer_id')
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        phone_number = request.POST.get('phone_number')
+        payment_category = request.POST.get('payment_category')
+
+        # Get the customer object
+        customer = get_object_or_404(Customer, customer_id=customer_id)
+
+        # Update customer details
+        customer.username = username
+        customer.email = email
+        customer.phone_number = phone_number
+        customer.payment_category = payment_category
+        customer.save()
+
+        # Return a success response
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+    
 class CustomerDelete(DeleteView):
     model = Customer
     success_url = reverse_lazy('customer-list') 
@@ -326,3 +502,28 @@ def admin_logout(request):
         request.session.flush()  # Clear the session data
         Session.objects.filter(session_key=session_key).delete()  # Delete the session from the database
     return redirect('login_admin')  # Redirect to the login page after logout\
+
+
+
+def get_site_settings(request):
+    settings = get_object_or_404(SiteSettings)
+    return JsonResponse({
+        'logo_header_color': settings.logo_header_color,
+        'navbar_color': settings.navbar_color,
+        'sidebar_color': settings.sidebar_color,
+    })
+
+def save_site_settings(request):
+    if request.method == 'POST':
+        logo_header_color = request.POST.get('logo_header_color')
+        navbar_color = request.POST.get('navbar_color')
+        sidebar_color = request.POST.get('sidebar_color')
+
+        settings = get_object_or_404(SiteSettings)
+        settings.logo_header_color = logo_header_color
+        settings.navbar_color = navbar_color
+        settings.sidebar_color = sidebar_color
+        settings.save()
+
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'failed'}, status=400)

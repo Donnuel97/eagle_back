@@ -1,0 +1,128 @@
+<!-- payment_modal.html -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">Enter Customer ID</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="customerIdForm">
+                    <div class="mb-3">
+                        <label for="customerId" class="form-label">Customer ID</label>
+                        <input type="text" class="form-control" id="customerId" name="customer_id" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Fetch Customer</button>
+                </form>
+
+                <div id="loader" style="display:none;">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+
+                <div id="paymentForm" style="display:none;">
+                    <form id="submitPaymentForm">
+                        <h5>Customer Details</h5>
+                        <p id="customerDetails"></p>
+                        <div>
+                            <p><strong>Agent:</strong> <span id="agentName">{{ agent_name }}</span></p>
+                        </div>
+                        <div class="mb-3">
+                            <label for="amountPaid" class="form-label">Amount Paid</label>
+                            <input type="number" class="form-control" id="amountPaid" name="amount_paid" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                        </div>
+                        <input type="hidden" id="receivedBy" name="received_by" value="{{ agent_name }}">
+                        <button type="submit" class="btn btn-primary">Submit Payment</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    var agentName = "{{ agent_name }}";  // Ensure this is properly passed from Django context
+
+    document.getElementById('customerIdForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var customerId = document.getElementById('customerId').value;
+        var loader = document.getElementById('loader');
+        var paymentForm = document.getElementById('paymentForm');
+        var customerDetails = document.getElementById('customerDetails');
+
+        loader.style.display = 'block';  // Show loader
+        paymentForm.style.display = 'none'; // Hide payment form
+
+        fetch('/fetch-customer-data/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'customer_id=' + customerId
+        })
+        .then(response => response.json())
+        .then(data => {
+            loader.style.display = 'none'; // Hide loader
+            if (data.status === 'success') {
+                paymentForm.style.display = 'block'; // Show payment form
+                customerDetails.innerHTML = `
+                    <strong>Username:</strong> ${data.customer.username}<br>
+                    <strong>Email:</strong> ${data.customer.email}<br>
+                    <strong>Phone Number:</strong> ${data.customer.phone_number}<br>
+                    <strong>Payment Category:</strong> ${data.customer.payment_category}
+                `;
+            } else {
+                alert('Customer not found.');
+            }
+        })
+        .catch(error => console.log('Error:', error));
+    });
+
+    document.getElementById('submitPaymentForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        var customerId = document.getElementById('customerId').value;
+        var amountPaid = document.getElementById('amountPaid').value;
+        var description = document.getElementById('description').value;
+        var agent = agentName;  // Use the defined variable
+
+        fetch('/submit-payment/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `customer_id=${customerId}&amount_paid=${amountPaid}&description=${description}&received_by=${agent}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'Payment successful') {
+                alert('Payment submitted successfully! Reloading page...'); // Success message
+                showLoaderAndReload(); // Function to show loader and reload page
+            } else {
+                // Make error message more user-friendly
+                alert(`Payment Error: ${data.status}. Please ensure the amount paid is divisible by the customer's payment category.`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while processing the payment. Please try again.');
+        });
+    });
+
+    // Function to show a loader and reload the page
+    function showLoaderAndReload() {
+        var loader = document.getElementById('loader');
+        loader.style.display = 'block'; // Show loader
+        setTimeout(function() { // Optional delay for loader
+            window.location.reload(); // Reload the page
+        }, 2000); // Wait for 2 seconds before reloading
+    }
+</script>
