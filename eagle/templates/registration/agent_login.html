@@ -5,14 +5,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
-
+  <link
+      rel="icon"
+      href="{% static 'img/eagle-logo.jpg' %}"
+      type="image/x-icon"
+    />
+    
   <link rel="stylesheet" href="{% static 'css/login.css' %}">
+  <style>
+    .error-message {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 15px;
+      border: 1px solid red;
+      padding: 10px;
+      background-color: #f8d7da;
+      border-radius: 4px;
+  }
+</style>  
 </head>
 <body>
   <div class="wrapper">
     <form method="post" action="{% url 'login_agent' %}">
       {% csrf_token %}
         <h2>Login</h2>
+
+        <!-- Display error message if any -->
+        {% if error %}
+        <div class="error-message" style="color: red;">
+          {{ error }}
+        </div>
+        {% endif %}
+
         <div class="input-field">
           <input placeholder='Enter your agent_id' type="text" class="email" id="email" name="agent_id" value="">
           <label>Enter your ID</label>
@@ -31,8 +55,6 @@
         </div>
 
     </form>
-    
-    
   </div>
 </body>
 </html>

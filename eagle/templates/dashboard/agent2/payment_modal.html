@@ -1,4 +1,3 @@
-<!-- payment_modal.html -->
 <div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -21,13 +20,14 @@
                     </div>
                 </div>
 
+                <div id="errorMessage" style="color: red; display:none;"></div>
+
                 <div id="paymentForm" style="display:none;">
                     <form id="submitPaymentForm">
                         <h5>Customer Details</h5>
                         <p id="customerDetails"></p>
-                        <div>
-                            <p><strong>Agent:</strong> <span id="agentName">{{ agent_name }}</span></p>
-                        </div>
+                        <p><strong>Agent:</strong> <span id="agentName">{{ agent_name }}</span></p>
+
                         <div class="mb-3">
                             <label for="amountPaid" class="form-label">Amount Paid</label>
                             <input type="number" class="form-control" id="amountPaid" name="amount_paid" required>
@@ -46,7 +46,7 @@
 </div>
 
 <script type="text/javascript">
-    var agentName = "{{ agent_name }}";  // Ensure this is properly passed from Django context
+    var agentName = "{{ agent_name }}";  // Ensure this is passed from Django context
 
     document.getElementById('customerIdForm').addEventListener('submit', function(event) {
         event.preventDefault();
@@ -55,9 +55,11 @@
         var loader = document.getElementById('loader');
         var paymentForm = document.getElementById('paymentForm');
         var customerDetails = document.getElementById('customerDetails');
+        var errorMessage = document.getElementById('errorMessage');
 
-        loader.style.display = 'block';  // Show loader
-        paymentForm.style.display = 'none'; // Hide payment form
+        loader.style.display = 'block';
+        paymentForm.style.display = 'none';
+        errorMessage.style.display = 'none';
 
         fetch('/fetch-customer-data/', {
             method: 'POST',
@@ -69,17 +71,18 @@
         })
         .then(response => response.json())
         .then(data => {
-            loader.style.display = 'none'; // Hide loader
+            loader.style.display = 'none';
             if (data.status === 'success') {
-                paymentForm.style.display = 'block'; // Show payment form
+                paymentForm.style.display = 'block';
                 customerDetails.innerHTML = `
                     <strong>Username:</strong> ${data.customer.username}<br>
                     <strong>Email:</strong> ${data.customer.email}<br>
                     <strong>Phone Number:</strong> ${data.customer.phone_number}<br>
                     <strong>Payment Category:</strong> ${data.customer.payment_category}
                 `;
-            } else {
-                alert('Customer not found.');
+            } else if (data.status === 'error') {
+                errorMessage.innerText = data.message;
+                errorMessage.style.display = 'block';
             }
         })
         .catch(error => console.log('Error:', error));
@@ -91,7 +94,7 @@
         var customerId = document.getElementById('customerId').value;
         var amountPaid = document.getElementById('amountPaid').value;
         var description = document.getElementById('description').value;
-        var agent = agentName;  // Use the defined variable
+        var agent = agentName;
 
         fetch('/submit-payment/', {
             method: 'POST',
@@ -104,25 +107,20 @@
         .then(response => response.json())
         .then(data => {
             if (data.status === 'Payment successful') {
-                alert('Payment submitted successfully! Reloading page...'); // Success message
-                showLoaderAndReload(); // Function to show loader and reload page
+                alert('Payment submitted successfully!');
+                showLoaderAndReload();
             } else {
-                // Make error message more user-friendly
-                alert(`Payment Error: ${data.status}. Please ensure the amount paid is divisible by the customer's payment category.`);
+                alert(`Payment Error: ${data.status}`);
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while processing the payment. Please try again.');
-        });
+        .catch(error => console.log('Error:', error));
     });
 
-    // Function to show a loader and reload the page
     function showLoaderAndReload() {
         var loader = document.getElementById('loader');
-        loader.style.display = 'block'; // Show loader
-        setTimeout(function() { // Optional delay for loader
-            window.location.reload(); // Reload the page
-        }, 2000); // Wait for 2 seconds before reloading
+        loader.style.display = 'block';
+        setTimeout(function() {
+            window.location.reload();
+        }, 2000);
     }
 </script>

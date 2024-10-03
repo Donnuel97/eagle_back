@@ -28,6 +28,7 @@ urlpatterns = [
     path('eagle_admin', login_admin, name='login_admin'),
     path('toggle-status/', toggle_customer_status, name='toggle_customer_status'),
     path('edit_customer/', views.edit_customer, name='edit_customer'),
+    
     # Add other URLs as needed
     path('test', test, name='test'),
     path('fetch-customer-data/', fetch_customer_data, name='fetch_customer_data'),

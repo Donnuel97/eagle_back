@@ -36,18 +36,26 @@ def test(request):
 @csrf_exempt
 def fetch_customer_data(request):
     if request.method == 'POST':
-        
         customer_id = request.POST.get('customer_id')
-        customer = get_object_or_404(Customer, customer_id=customer_id)
+        try:
+            customer = get_object_or_404(Customer, customer_id=customer_id)
+        except Customer.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Customer not found.'})
+
+        if customer.status == 0:
+            return JsonResponse({'status': 'error', 'message': 'Customer account is suspended.'})
+
         return JsonResponse({
             'customer': {
                 'username': customer.username,
                 'email': customer.email,
                 'phone_number': customer.phone_number,
+                'payment_category': customer.payment_category
             },
             'status': 'success'
         })
 
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
 @csrf_exempt
 def submit_payment(request):
@@ -208,19 +216,18 @@ def login_agent(request):
             user = Agent.objects.get(agent_id=agent_id)
             agent_name = user.username  # Fetch agent name
         except Agent.DoesNotExist:
-            return HttpResponse('Agent does not exist')
+            return render(request, 'registration/agent_login.html', {'error': 'Agent does not exist'})
 
-        # Store agent_id and agent_name in session
-        if user is not None:
-            request.session['agent_id'] = user.agent_id
-            request.session['agent_name'] = agent_name  # Store agent name in session
-            print("Agent Name stored in session:", request.session['agent_name'])  # Debug line
-            return redirect('payment_start')  # Adjust this redirect if necessary
-        else:
-            return HttpResponse('Invalid ID')
+        # Check if the agent is suspended
+        if user.status == 0:
+            return render(request, 'registration/agent_login.html', {'error': 'Your account is suspended. Please contact support.'})
+
+        # Store agent_id and agent_name in session if the agent is active
+        request.session['agent_id'] = user.agent_id
+        request.session['agent_name'] = agent_name  # Store agent name in session
+        return redirect('payment_start')  # Redirect after successful login
 
     return render(request, 'registration/agent_login.html')
-
 
 
 
@@ -253,7 +260,7 @@ def client_payment_history(request, user_id):
 def admin_payment_history(request, user_id):
     user = get_object_or_404(Customer, customer_id=user_id)
     user_payments = Payments.objects.filter(customer__customer_id=user_id)
-    return render(request, 'dashboard/admin/payment_history.html', {'user': user,'user_payments': user_payments})
+    return render(request, 'dashboard/admin2/payment_history.html', {'user': user,'user_payments': user_payments})
 
     
 
@@ -348,15 +355,14 @@ class ToggleAgentStatusView(View):
     def post(self, request, *args, **kwargs):
         agent_id = request.POST.get('agent_id')
         agent = get_object_or_404(Agent, agent_id=agent_id)
-        
+
         # Toggle status
         if agent.status == 1:
             agent.status = 0  # Suspend
         else:
             agent.status = 1  # Activate
-            
+
         agent.save()
-        
         return JsonResponse({'success': True, 'new_status': agent.status})
 
 
@@ -368,12 +374,16 @@ class EditAgentView(View):
         phone_number = request.POST.get('phone_number')
 
         agent = get_object_or_404(Agent, agent_id=agent_id)
-        agent.username = username
-        agent.email = email
-        agent.phone_number = phone_number
-        agent.save()
 
-        return JsonResponse({'success': True})
+        try:
+            agent.username = username
+            agent.email = email
+            agent.phone_number = phone_number
+            agent.save()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
 @method_decorator(login_required, name='dispatch')
 class AgentEditView(UpdateView):
     model = Agent
@@ -405,7 +415,7 @@ class CustomerList(ListView):
         context['total_customer'] = total_customer
         return context
 
-@csrf_exempt
+
 @csrf_exempt
 def toggle_customer_status(request):
     if request.method == 'POST':
@@ -461,7 +471,8 @@ def edit_customer(request):
         return JsonResponse({'success': True})
 
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
-    
+
+
 class CustomerDelete(DeleteView):
     model = Customer
     success_url = reverse_lazy('customer-list') 

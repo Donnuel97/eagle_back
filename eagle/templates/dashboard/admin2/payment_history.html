@@ -1,0 +1,133 @@
+{% extends 'dashboard/admin2/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <div class="page-inner">
+        <div class="page-header">
+            <h3 class="fw-bold mb-3"></h3>
+           
+        </div>
+
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex align-items-center">
+                        <h4>Payment history</h4>
+                        <div class="ms-md-auto py-2 py-md-0">
+                            <button href="#" class="btn btn-label-info btn-round me-2" id="export-pdf">PDF</button>
+                            <button href="#" class="btn btn-primary btn-round" id="downloadexcel">Excel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table id="table" class="display table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th><p><span><b>Client Name</b>: {{user.username}}</span></p></th>
+                                    <th><p><span><b>Client ID</b>: {{user.customer_id }}</span></p></th>
+                                </tr>
+                                <tr>
+                                    <th>Amount Paid</th>
+                                    <th>Payment Duration</th>
+                                    <th>Description</th>
+                                    <th>Payment Date</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="payment-history-body">
+                                {% if user_payments %}
+                                {% for payment in user_payments %}
+                                    <tr>
+                                        <td>{{ payment.amount_paid }}</td>
+                                        <td>{{ payment.payment_duration }}</td>
+                                        <td>{{ payment.description }}</td>
+                                        <td>{{ payment.payment_date }}</td>
+                                        <td>{{ payment.expiry_date }}</td>
+                                        <td>
+                                            {% if payment.expiry_date < now %}
+                                                <p style='color:red;'>Expired</p>
+                                            {% else %}
+                                                <p style='color:green;'>Active</p>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                {% else %}
+                                    <tr>
+                                        <td colspan="6">No data available</td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+
+                        <!-- Pagination controls -->
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center" id="pagination-controls"></ul>
+                        </nav>
+                        
+                        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+                        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+                        
+                        <script>
+                            // JavaScript for pagination
+                            $(document).ready(function() {
+                                const rowsPerPage = 10;
+                                const rows = $('#payment-history-body tr');
+                                const totalRows = rows.length;
+                                const totalPages = Math.ceil(totalRows / rowsPerPage);
+
+                                // Function to display rows for the current page
+                                function showPage(page) {
+                                    rows.hide();
+                                    const start = (page - 1) * rowsPerPage;
+                                    const end = start + rowsPerPage;
+                                    rows.slice(start, end).show();
+                                }
+
+                                // Generate pagination controls
+                                function generatePagination() {
+                                    const paginationControls = $('#pagination-controls');
+                                    paginationControls.empty();
+
+                                    for (let i = 1; i <= totalPages; i++) {
+                                        const activeClass = i === 1 ? 'active' : '';
+                                        paginationControls.append(`
+                                            <li class="page-item ${activeClass}">
+                                                <a class="page-link" href="#">${i}</a>
+                                            </li>
+                                        `);
+                                    }
+
+                                    // Add click event for pagination
+                                    paginationControls.find('a').click(function(e) {
+                                        e.preventDefault();
+                                        const page = parseInt($(this).text());
+
+                                        paginationControls.find('.page-item').removeClass('active');
+                                        $(this).parent().addClass('active');
+                                        showPage(page);
+                                    });
+                                }
+
+                                // Initialize pagination
+                                showPage(1);
+                                generatePagination();
+                            });
+                        </script>
+
+                        {%  include 'dashboard/agent2/payment_modal.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Include Bootstrap CSS and Font Awesome if not already included -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+<script src="{% static 'assets/js/plugin/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+{% endblock %}
