@@ -25,6 +25,7 @@ from django.utils import timezone
 from datetime import datetime
 import logging
 from django.core.mail import send_mail
+from django.conf import settings
 
 # Create a logger
 logger = logging.getLogger(__name__)
@@ -56,6 +57,8 @@ def fetch_customer_data(request):
         })
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+
 
 @csrf_exempt
 def submit_payment(request):
@@ -107,6 +110,9 @@ def submit_payment(request):
                 received_by=agent  # Pass the agent instance here
             )
 
+            # Send email to customer
+            send_payment_email(customer, amount_paid, payment_duration, agent)
+
             logger.info(f"Payment created successfully for customer {customer_id}.")
             return JsonResponse({'status': 'Payment successful'})
 
@@ -116,6 +122,43 @@ def submit_payment(request):
 
     return JsonResponse({'status': 'Invalid request'}, status=400)
 
+
+# Helper function to send email notification
+def send_payment_email(customer, amount_paid, payment_duration, agent):
+    subject = 'Payment Confirmation'
+
+    # Use the agent's username if there's no first_name or last_name
+    agent_name = agent.username
+
+    message = f"""
+    Dear {customer.username},
+
+    Thank you for your payment of NGN{amount_paid:.2f}.
+
+    Payment Details:
+    Amount Paid: NGN{amount_paid:.2f}
+    Payment Duration: {payment_duration} days
+    Received By: {agent_name}
+
+    We appreciate your business and look forward to serving you again.
+
+    Regards,
+    Eagle Trust Team
+    """
+    
+    recipient_list = [customer.email]
+    
+    try:
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,  # Use the default email configured in Django settings
+            recipient_list,
+            fail_silently=False,  # Fail loudly to catch errors in development/testing
+        )
+        logger.info(f"Payment email sent successfully to {customer.email}")
+    except Exception as e:
+        logger.error(f"Failed to send payment email to {customer.email}: {e}")
 
 # Register views:
 # 1. Admin register view
@@ -235,7 +278,24 @@ def login_agent(request):
 # 3. client login/payment starting view
 @agent_login_required
 def payment_start(request):
+    # Retrieve the agent's name from the session
     agent_name = request.session.get('agent_name', None)
+
+    # Ensure the agent is fetched from the database based on the session username
+    agent = get_object_or_404(Agent, username=agent_name)
+
+    # Get today's date (from midnight to now) to calculate today's payments
+    today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Calculate the total payments collected by the agent today
+    total_today = Payments.objects.filter(
+        received_by=agent, 
+        payment_date__gte=today
+    ).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0
+
+    # Calculate the total payments collected by the agent overall
+    total_overall = Payments.objects.filter(received_by=agent).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0
+
     if request.method == 'POST':
         customer_id = request.POST.get('customer_id')
         try:
@@ -243,10 +303,16 @@ def payment_start(request):
         except Customer.DoesNotExist:
             return HttpResponse('Customer does not exist')
 
+        # Store the customer ID in the session for further use
         request.session['customer_id'] = user.customer_id
         return redirect('payment', user_id=user.customer_id)
     
-    return render(request, 'dashboard/agent2/agent_dash.html', {'agent_name': agent_name})
+    # Pass the totals (daily and overall) to the template along with the agent's name
+    return render(request, 'dashboard/agent2/agent_dash.html', {
+        'agent_name': agent_name,
+        'total_today': total_today,
+        'total_overall': total_overall
+    })
 
 
 
